@@ -1,6 +1,6 @@
 (ns testapp.compojure.views
   (:use [hiccup core page])
-  (:require [reagent.core]
+  (:require
             [re-frame.core :as rf]))
 
 
@@ -27,19 +27,7 @@
 
 (def KEYS [:id :title :applicant :description :assignee :due-date])
 
-(defn application-list
-  []
-  [:div.appl_list
-   [:h3 "Applications List"]
-   [:table
-    [:tr (for [k KEYS]
-           [:th (name k)])]
-    (for [row @(rf/subscribe [:applications])]
-      [:tr
-       (for [k KEYS]
-         [:td (-> row k str)])
-       ]
-      )]])
+
 
 
 (defn ui [data]
@@ -49,8 +37,18 @@
      [:title "Applications"]
      [:style (str (slurp "resources/css/styles.css"))]]
     [:body
-     (if (= :list @(rf/s  ubscribe [:mode]))
-       [application-list]
+     (if (= :list @(rf/subscribe [:mode]))
+       [:div.appl_list
+        [:h3 "Applications List"]
+        [:table
+         [:tr (for [k KEYS]
+                [:th (name k)])]
+         (for [row @(rf/subscribe [:applications])]
+           [:tr
+            (for [k KEYS]
+              [:td (-> row k str)])
+            ]
+           )]]
        [:div.appl_create
         [:h3 "Create an application:"]
         [:form
