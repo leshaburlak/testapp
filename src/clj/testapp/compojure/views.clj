@@ -49,7 +49,7 @@
      [:title "Applications"]
      [:style (str (slurp "resources/css/styles.css"))]]
     [:body
-     (if (= :list @(rf/s  ubscribe [:mode]))
+     (if (= :list @(rf/subscribe [:mode]))
        [application-list]
        [:div.appl_create
         [:h3 "Create an application:"]

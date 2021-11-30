@@ -1,12 +1,12 @@
 (ns testapp.datomic-db
   (:require [defcomponent :refer :all]
             [datomic.client.api :as d]
-            [clojure.core.async :as a]))
+            [plumbing.core :refer [?>> map-vals]]))
 
 
 
 (defn existing-applications
-  [{:keys [datomic-client]}]
+  [{:keys [datomic-client]} & {:keys [stringify] :or {stringify false}}]
   (let [db-conn (d/connect datomic-client {:db-name "application"})
         q '[:find ?id ?title ?description ?applicant ?assignee ?due-date
             :where
@@ -24,7 +24,13 @@
                     :applicant appl
                     :assignee ass
                     :due-date compl})]
-    (map decouple res)))
+    (map
+      (comp
+        (if stringify (partial map-vals str) identity)
+        decouple)
+      res)))
+
+
 
 
 
