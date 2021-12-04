@@ -3,105 +3,81 @@
   (:require [reagent.dom]
             [reagent.ratom]
             [re-frame.core :as rf]
-            [testapp.events]))
-
-
-(rf/reg-event-db
-  :initialize
-  (fn [_ [_ data]]
-    {:applications (vec data)
-     :has-data false
-     :mode :list}))
-
-
-(rf/reg-sub
-  :applications
-  (fn [db _]
-    (:applications db)))
-
-(rf/reg-sub
-  :mode
-  (fn [db _]
-    (:mode db)))
-
-(rf/reg-sub
-  :has-data
-  (fn [db _]
-    (:has-data db)))
-
+            [testapp.events]
+            [testapp.subs]))
 
 (def KEYS [:id :title :applicant :description :assignee :due-date])
 
 (defn application-list
   []
   [:div.appl_list
-   [:h3 "Applications List"]
    (if @(rf/subscribe [:has-data])
      [:table
       [:thead [:tr (for [k KEYS]
-                     [:th (name k)])]]
+                     [:th {:key k} (name k)])]]
       [:tbody
        (for [row @(rf/subscribe [:applications])]
-         [:tr
+         [:tr {:key (:id row)}
           (for [k KEYS]
-            [:td (k row)])])]]
+            [:td {:key (str (:id row) k)} (k row)])])]]
      [:span "loading..."])])
 
 
-;(defn ui []
-;  [:head
-;   [:title "Applications"]
-;   [:style (str (slurp "resources/css/styles.css"))]]
-;  [:body
-;   (if (= :list @(rf/subscribe [:mode]))
-;     [application-list]
-;     [:div.appl_create
-;      [:h3 "Create an application:"]
-;      [:form
-;       [:label]]])])
+(defn selector
+  []
+  [:div {:class "grid-container"}
+   [:div {:class ["grid-child" (when (= :list @(rf/subscribe [:mode])) "selected")]
+          :on-click #(do
+                       (rf/dispatch [:refresh-applications])
+                       (rf/dispatch-sync [:applications-list-clicked]))}
+    "applications list"]
+   [:div {:class ["grid-child" (when (= :new @(rf/subscribe [:mode])) "selected")]
+          :on-click #(rf/dispatch-sync [:new-application-clicked])}
+    "new application"]])
 
 
+(defn input-component
+  [id type title placeholder]
+  [:div
+   [:label {:for (name id)} title]
+   [:input {:type type
+            :id (name id)
+            :class [(when @(rf/subscribe [:form-was-input id])
+                      (if @(rf/subscribe [:form-ok id])
+                        "correct"
+                        "wrong"))]
+            :placeholder placeholder
+            :value @(rf/subscribe [:form-data id])
+            :on-change #(rf/dispatch [:form id (-> % .-target .-value)])}]])
 
-;(defn selector
-;  []
-;  [:div {:class "grid-container"}
-;   [:div {:class "grid-child selected"}
-;    "applications list"]
-;   [:div {:class "grid-child"}
-;    "new application"]])
+(defn new-application
+  []
+  [:div
+   [:h3 "Create an application:"]
+   [:div {:class "form"}
+    [input-component :title "text" "title" "Title"]
+    [input-component :description "textarea" "description" "blah-blah"]
+    [input-component :applicant "text" "applicant" "John Doe"]
+    [input-component :assignee "text" "assignee" "Jane Doe"]
+    [input-component :due-date "date" "due date" nil]
+    [:button {:disabled (not @(rf/subscribe [:data-valid?]))
+              :on-click #(rf/dispatch [:send-data])}
+     "Submit"]]])
 
 
 (defn ui []
-  (if (= :list @(rf/subscribe [:mode]))
-    [application-list]
-    [:div.appl_create
-     [:h3 "Create an application:"]
-     [:form
-      [:label]]]))
+  [:div
+   [selector]
+   (if (= :list @(rf/subscribe [:mode]))
+     [application-list]
+     [new-application])])
 
 
 
-
-
-
-
-(.log js/console "PRIVET EBAT")
-
-(rf/dispatch-sync [:initialize [#_{:id "uuid"
-                                 :title "title"
-                                 :description "desc"
-                                 :applicant "appl"
-                                 :assignee "ass"
-                                 :due-date "compl"} ]])
-
-
-
+(rf/dispatch-sync [:initialize])
 (rf/dispatch [:refresh-applications])
 
 (reagent.dom/render [ui]
   (js/document.getElementById "app"))
 
-
-#_(defn run
-  []
-  )
+;; todo change to ^:export main ?

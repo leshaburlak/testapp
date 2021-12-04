@@ -11,7 +11,8 @@
             [ring.middleware.reload :refer [wrap-reload]]
             [clojure.core.async :as a]
             [ring.util.response :as response]
-            [ring.middleware.json :refer [wrap-json-response]]
+            [ring.middleware.json :refer [wrap-json-response wrap-json-params wrap-json-body]]
+            [ring.middleware.defaults :refer :all]
             )
   (:import (org.eclipse.jetty.server Server)))
 
@@ -22,12 +23,30 @@
 
 (defroutes app-routes
   (context "/testapp" []
+
     (GET "/" [] (response/resource-response "index.html" {:root "public"}))
-    (wrap-json-response
-      (GET "/applications" {:keys [datomic-client]}
-        (existing-applications datomic-client :stringify true))))
-  (route/resources "/")
-  (route/not-found "Page not found"))
+
+    (-> (GET "/applications" {:keys [datomic-client]}
+          (existing-applications datomic-client :stringify true))
+      (wrap-json-response))
+
+
+    (-> (POST "/new-application" {:keys [datomic-client json-params body] :as all}
+          (prn (:params all))
+          (reset! a all)
+
+          (new-application datomic-client json-params)
+          {:body {:id "hui"}})
+      (wrap-json-params {:keywords? true})
+      (wrap-json-response)
+      )
+
+    (route/resources "/")
+    (route/not-found "Page not found"))
+  (route/not-found "Page not found")
+
+  )
+
 
 (defcomponent http-server
   [datomic-client]
@@ -36,15 +55,14 @@
     (let [add-db-client-middleware
           (fn [handler]
             (fn [rec]
+
               (handler (assoc rec :datomic-client datomic-client))))
 
           {:keys [base-path port]} (:http config)
           _ (prn :BASE_PATH base-path)
           app (-> app-routes
-                ;(handler/site)
                 (wrap-routes add-db-client-middleware)
                 (wrap-reload))
-          ;reloading-app (wrap-reload #'app)
           jetty-server (run-jetty
                          app
                          {:join? false

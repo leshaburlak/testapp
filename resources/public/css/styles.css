@@ -18,3 +18,82 @@ th {
   background-color: grey;
   color: white;
 }
+
+.grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 5px;
+    margin: 10px;
+    margin-left: 0px;
+    width: 50%;
+    min-width: wrap-content;
+
+}
+
+.grid-child {
+    border: 1px solid grey;
+    padding: 10px;
+}
+
+.grid-child:hover {
+    background-color: #f2f2f2;
+}
+
+.grid-child.selected:hover {
+    background-color: #adf;
+}
+
+.selected {
+    background-color:#adf;
+}
+
+
+.correct {
+   background-color: #ddf5e3;
+}
+
+.wrong {
+    background-color: #f5c7c7;
+}
+
+
+
+input[type=text], input[type=textarea], input[type=date] {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid black;
+  box-sizing: border-box;
+  margin-top: 6px;
+  margin-bottom: 16px;
+  resize: vertical
+}
+
+
+.form {
+  border-radius: 5px;
+  background-color: #f2f2f2;
+  padding: 20px;
+}
+
+
+
+button:hover {
+    border: 1px solid #ccc;
+}
+
+button:disabled,
+button[disabled] {
+    background-color: #f5c7c7;
+    border: 1px solid black;
+}
+
+button {
+    background-color:#ddf5e3;
+    border: 1px solid black;
+    color: black;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
