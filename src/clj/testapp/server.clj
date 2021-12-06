@@ -5,7 +5,6 @@
   (:require [compojure.route :as route]
             [compojure.handler :as handler]
             [defcomponent :refer [defcomponent]]
-            [testapp.compojure.views :refer :all]
             [testapp.datomic-db :refer :all]
             [testapp.datomic-worker :refer [datomic-worker new-application-async]]
             [ring.adapter.jetty :refer :all]

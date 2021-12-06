@@ -1,5 +1,5 @@
 (ns testapp.core
-  ;(:use [hiccup core page])
+  ;
   (:require [reagent.dom]
             [reagent.ratom]
             [re-frame.core :as rf]

@@ -25,7 +25,7 @@
   (fn [_ _]
     {:applications []
      :has-data false
-     :mode :new
+     :mode :list
      :form default-form-state}))
 
 (reg-event-db

@@ -22,48 +22,56 @@
                  [prismatic/plumbing "0.5.5"]
                  [ring/ring-defaults "0.3.3"]
                  ]
+  :plugins [[lein-cljsbuild "1.1.8"]
+            [lein-shell "0.5.0"]]
   :source-paths ["src/clj" "src/cljs" "dev"]
   :resource-paths ["resources"]
   :main ^:skip-aot testapp.core
   :target-path "target/%s"
 
-  :profiles {:uberjar {:aot :all}
+  :profiles {:uberjar {:aot :all
+                       :omit-source true
+                       :prep-tasks [["shell" "rm" "-r" "resources/public/js/"]
+                                    "compile" ["cljsbuild" "once"]]
+                       :cljsbuild {:builds [{:id :main
+                                             :source-paths ["src/cljs"]
+                                             ;:jar true
+                                             :compiler {:main "testapp.core"
+                                                        :source-paths ["src/cljs"]
+                                                        :optimizations :advanced
+                                                        :pretty-print false
+                                                        :output-dir "target/js-compiler-output"
+                                                        :output-to "resources/public/js/app.js"}}]}}
              :dev {:repl-options {:init-ns user.my}
                    :main user.my
                    :resource-paths ["resources"]
                    :dependencies [[nrepl "0.8.3"]
-                                  [org.clojure/tools.namespace "1.1.0"]]
-                   }
-               :ui {;:repl-options {:init-ns user.my}
-                    ;:main user.my
-                    :resource-paths ["resources"]
-                    :plugins [[lein-figwheel "0.5.20"]]
-                    :dependencies [[com.bhauman/figwheel-main "0.2.15"]
-                                   [com.bhauman/figwheel-repl "0.2.15"]
-                                   [com.bhauman/rebel-readline-cljs "0.1.4"]
-                                   [ring/ring-core "1.9.1"]
-                                   [ring/ring-defaults "0.3.2"]
-                                   [ring/ring-devel "1.9.1"]
-                                   [ring "1.9.1"]
-                                   [org.eclipse.jetty.websocket/websocket-servlet "9.4.36.v20210114"]
-                                   [org.eclipse.jetty.websocket/websocket-server  "9.4.36.v20210114"] ]
-                    :clean-targets ^{:protect false} ["resources/public/js" :target]
-                    :cljsbuild {:builds [{:id "testapp"
-                                          :source-paths ["src/cljs"]
-                                          ;:figwheel {:websocket-url "ws://localhost:3449/figwheel-connect/"}
-                                          :compiler {:main "testapp.core"
-                                                     :optimizations :none
-                                                     ;:connect-url "ws://localhost:9500/figwheel-connect"
-                                                     :asset-path "js/out"
-                                                     :output-to "resources/public/js/app.js"
-                                                     :output-dir "resources/public/js/out"
-                                                     :preloads [figwheel.core figwheel.main figwheel.repl.preload]
-                                                     :closure-defines {
-figwheel.repl/connect-url "ws://localhost:3449/figwheel-connect"
-                                                                       }
-                                                     } } ]
-                                }}
-             }
+                                  [org.clojure/tools.namespace "1.1.0"]]}
+             :ui {:resource-paths ["resources"]
+                  :plugins [[lein-figwheel "0.5.20"]]
+                  :dependencies [[com.bhauman/figwheel-main "0.2.15"]
+                                 [com.bhauman/figwheel-repl "0.2.15"]
+                                 [com.bhauman/rebel-readline-cljs "0.1.4"]
+                                 [ring/ring-core "1.9.1"]
+                                 [ring/ring-defaults "0.3.2"]
+                                 [ring/ring-devel "1.9.1"]
+                                 [ring "1.9.1"]
+                                 [org.eclipse.jetty.websocket/websocket-servlet "9.4.36.v20210114"]
+                                 [org.eclipse.jetty.websocket/websocket-server  "9.4.36.v20210114"] ]
+                  :clean-targets ^{:protect false} ["resources/public/js" :target]
+                  :cljsbuild {:builds [{:id "testapp"
+                                        :source-paths ["src/cljs"]
+                                        ;:figwheel {:websocket-url "ws://localhost:3449/figwheel-connect/"}
+                                        :compiler {:main "testapp.core"
+                                                   :optimizations :none
+                                                   :asset-path "js/out"
+                                                   :output-to "resources/public/js/app.js"
+                                                   :output-dir "resources/public/js/out"
+                                                   :preloads [figwheel.core figwheel.main figwheel.repl.preload]}}]}}}
+
+
+
+
 
 
 

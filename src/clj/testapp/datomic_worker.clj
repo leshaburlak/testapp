@@ -26,7 +26,9 @@
           [(a/go
              (when-let [v (a/<! c)]
                (try
+                 ;(prn (put-to-db v))
                  (put-to-db v)
+                 ;(prn :INSERT_OK)
                  (catch Exception e
                    (println e)))))])]
     [c thr-chans]))
