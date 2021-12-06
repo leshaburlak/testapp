@@ -1,14 +1,24 @@
 (ns testapp.events
   (:require [ajax.core :refer [GET POST]]
             [re-frame.core :refer [reg-event-db dispatch dispatch-sync reg-fx reg-event-fx]]
-            [plumbing.core :refer [map-vals]]
-            [cljs.core.async :as a]))
+            [plumbing.core :refer [map-vals]]))
 
 
 
 ;; todo fix initial button color
 ;; todo reset form to initial state after successful post
 
+(def ^:private default-input-state
+  {:data-input false
+   :data-correct false
+   :data nil})
+
+(def ^:private default-form-state
+  {:title default-input-state
+   :description default-input-state
+   :applicant default-input-state
+   :assignee default-input-state
+   :due-date default-input-state})
 
 (reg-event-db
   :initialize
@@ -16,21 +26,7 @@
     {:applications []
      :has-data false
      :mode :new
-     :form {:title {:data-input false
-                    :data-correct false
-                    :data nil}
-            :description {:data-input false
-                          :data-correct false
-                          :data nil}
-            :applicant {:data-input false
-                        :data-correct false
-                        :data nil}
-            :assignee {:data-input false
-                       :data-correct false
-                       :data nil}
-            :due-date {:data-input false
-                       :data-correct false
-                       :data nil}}}))
+     :form default-form-state}))
 
 (reg-event-db
   :form
@@ -62,64 +58,71 @@
 
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(reg-fx
+  :alert
+  (fn [value]
+    (js/alert value)))
+
+(reg-event-fx
+  :bad-response
+  (fn [_ v]
+    (println v)
+    {:alert "bad response"}))
+
+(reg-event-db
+  :set-applications
+  (fn [db [_ data]]
+    (assoc db
+      :applications data
+      :has-data true)))
+
+(defn- process-get-apps-response
+  [data]
+  (dispatch [:set-applications data]))
+
+(reg-event-fx
+  :new-app-success
+  (fn [{:keys [db]} _]
+    {:db (assoc db :form default-form-state)
+     :alert "application created"}))
+
+(reg-fx
+  :http
+  (fn [[action data]]
+    (case action
+      :get-apps
+      (GET
+        "http://localhost:8080/testapp/applications"
+        {:handler       process-get-apps-response
+         :error-handler #(dispatch [:bad-response %1]) ;; todo
+         :response-format :json
+         :keywords? true})
+
+      :new-app
+      (POST
+        "http://localhost:8080/testapp/new-application"
+        {:handler #(dispatch [:new-app-success %1])
+         :error-handler #(dispatch [:bad-response %1])
+         :params data
+         :format :json
+         :response-format :json
+         :keywords? true}))))
 
 
-(defn extract-data-from-db
+(defn- extract-data-from-db
   [db]
   (->> db :form (map-vals (comp str :data))))
 
-(reg-event-db
-  :new-app-response
-  (fn [db v]
-    (println v)
-    db))
-
-(reg-event-db
-  :bad-response
-  (fn [db v]
-    (println v)
-    db))
-
-
-
-(reg-event-db
+(reg-event-fx
   :send-data
-  (fn [db _]
-    (a/go
-      (let [d (extract-data-from-db db)]
-        (println "SEND DATA RATATATATA")
-        (println (str d))
-        (POST
-          "http://localhost:8080/testapp/new-application"
-          {:handler #(dispatch [:new-app-response %1])
-           :error-handler #(dispatch [:bad-response %1])
-           :params d
-           :format :json
-           :response-format :json
-           :keywords? true})))
-    db))
+  (fn [cofx _]
+    {:http [:new-app (extract-data-from-db (:db cofx))]}))
 
-
-;; todo fx?
-(reg-event-db
+(reg-event-fx
   :refresh-applications
   (fn
-    [db _]
-    (GET
-      "http://localhost:8080/testapp/applications"
-      {:handler       #(dispatch [:process-response %1])
-       :error-handler #(dispatch [:bad-response %1]) ;; todo
-       :response-format :json
-       :keywords? true})
-
-    (assoc db :has-data false)))
-
-
-(reg-event-db
-  :process-response
-  (fn
-    [db [_ response]]
-    (println response)
-    (-> db
-      (assoc :has-data true)
-      (assoc :applications response))))
+    [{:keys [db]} _]
+    {:db (assoc db :has-data false)
+     :http [:get-apps]}))

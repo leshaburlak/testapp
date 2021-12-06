@@ -56,9 +56,10 @@
   []
   [config]
   (start [this]
-    (let [client-config (get-in config [:db :datomic-client])]
+    (let [client-config (get-in config [:db :datomic-client])
+          client (d/client client-config)]
       (prn "datomic client started")
-      (assoc this :datomic-client (d/client client-config))))
+      (assoc this :datomic-client client)))
   (stop [this]
     (dissoc this :datomic-client)))
 
@@ -149,8 +150,8 @@
 ;  (d/create-database client {:db-name "application"})
 ;  (let [db-conn (d/connect client {:db-name "application"})]
 ;    ;(d/transact db-conn {:tx-data application-schema})
-;    (d/transact db-conn {:tx-data (test-data "hello")})
-;    #_(d/q
+;    ;(d/transact db-conn {:tx-data (test-data "hello")})
+;    (d/q
 ;      '[:find ?ident :where
 ;        [?e :db/ident ?ident]
 ;        [_ :db.install/attribute ?e]
@@ -186,3 +187,7 @@
 ;  )
 
 ;
+
+
+;(let [this (get user.my/system datomic-client)]
+;  (count ))
