@@ -1,7 +1,5 @@
 (ns testapp.server
-  ;; todo get rid of :use ?
-  (:use compojure.core
-        [hiccup.middleware :only (wrap-base-url)])
+  (:use compojure.core)
   (:require [compojure.route :as route]
             [compojure.handler :as handler]
             [defcomponent :refer [defcomponent]]
@@ -36,7 +34,7 @@
 (defcomponent http-server
   [datomic-client datomic-worker]
   [config]
-  (start [{:keys [config datomic-client datomic-worker] :as this}]
+  (start [{:keys [datomic-client datomic-worker] :as this}]
     (let [add-db-client-middleware
           (fn [handler]
             (fn [rec]

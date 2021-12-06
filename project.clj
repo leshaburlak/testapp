@@ -24,14 +24,14 @@
   :plugins [[lein-cljsbuild "1.1.8"]
             [lein-shell "0.5.0"]]
   :source-paths ["src/clj" "src/cljs" "dev"]
-  :resource-paths ["resources"]
+  :resource-paths ["resources" "config"]
   :main ^:skip-aot testapp.core
   :target-path "target/%s"
 
   :profiles {:uberjar {:aot :all
                        :omit-source true
-                       :prep-tasks [["shell" "rm" "-r" "resources/public/js/"]
-                                    "compile" ["cljsbuild" "once"]]
+                       :prep-tasks [["shell" "rm" "-rf" "resources/public/js/"]
+                                     "compile" ["cljsbuild" "once"]]
                        :cljsbuild {:builds [{:id :main
                                              :source-paths ["src/cljs"]
                                              ;:jar true
