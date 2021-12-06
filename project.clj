@@ -20,8 +20,7 @@
                  [org.slf4j/slf4j-api "1.7.26"]
                  [org.slf4j/slf4j-simple "1.7.26"]
                  [prismatic/plumbing "0.5.5"]
-                 [ring/ring-defaults "0.3.3"]
-                 ]
+                 [ring/ring-defaults "0.3.3"]]
   :plugins [[lein-cljsbuild "1.1.8"]
             [lein-shell "0.5.0"]]
   :source-paths ["src/clj" "src/cljs" "dev"]
@@ -67,16 +66,5 @@
                                                    :asset-path "js/out"
                                                    :output-to "resources/public/js/app.js"
                                                    :output-dir "resources/public/js/out"
-                                                   :preloads [figwheel.core figwheel.main figwheel.repl.preload]}}]}}}
-
-
-
-
-
-
-
-
-
-
-  )
+                                                   :preloads [figwheel.core figwheel.main figwheel.repl.preload]}}]}}})
 
